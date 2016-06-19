@@ -10,7 +10,7 @@ modifications to most normal source and header files should just work.
 The use of ninja results in vastly improved incremental build times:
 
 | Change                    | make -j8 | make -j8 objectname | ninja  |
-| --------------------------| -------- | --------------------| ----- -|
+| --------------------------| -------- | ------------------- | ------ |
 | No changes                |  2.254s  |       0.731s        | 0.065s |
 | One change, compile error |  1.225s  |       0.765s        | 0.077s |
 | One change, full link     |  5.915s  |       NA            | 4.482s |
