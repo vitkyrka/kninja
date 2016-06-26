@@ -201,10 +201,13 @@ def main():
                 makedb = f.readlines()
 
     if not makedb:
-        cmd = ['make', '-p']
-        if args.path:
-            cmd.extend(['-C', args.path])
+        makeargs = cmd.extend(['-C', args.path]) if args.path else []
 
+        cmd = ['make', '-j', '%d' % os.cpu_count()] + makeargs
+        logging.info('Ensuring full build: %s', ' '.join(cmd))
+        subprocess.check_call(cmd)
+
+        cmd = ['make', '-p'] + makeargs
         logging.info('Generating make database: %s', ' '.join(cmd))
         out = subprocess.check_output(cmd).decode('utf-8')
 
