@@ -154,13 +154,15 @@ class Kninja(object):
                     logging.debug('Ignoring duplicate rule %s', var)
                     continue
 
+                cmd = ' '.join(val.split())
+
                 rulenames.append(cmdname)
                 rules.append({'name': cmdname,
-                              'command': val,
+                              'command': cmd,
                               'deps': deps,
                               'depfile': depfile})
 
-                cmds.append((obj, val))
+                cmds.append((obj, cmd))
 
             elif var.startswith('deps_'):
                 obj = var.replace('deps_', '')
