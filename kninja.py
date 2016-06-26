@@ -48,17 +48,21 @@ class Kninja(object):
     def fixname(self, name):
         return name.replace('/', '_')
 
-    def should_ignore(self, obj):
+    def fixup_obj(self, obj):
         if obj in IGNORES:
             logging.debug('Ignoring %s', obj)
-            return True
+            return None
 
         for ign in WILDCARD_IGNORES:
             if fnmatch.fnmatch(obj, ign):
                 logging.debug('Ignoring %s', obj)
-                return True
+                return None
 
-        return False
+        # ARM oprofile objects have .. in their paths
+        if '..' in obj:
+            return os.path.relpath(obj)
+
+        return obj
 
     def convert(self, makedb):
         gotvmlinux = False
@@ -117,7 +121,8 @@ class Kninja(object):
                     and '.c' not in line:
                 obj, deps = line.rstrip().split(': ')
 
-                if self.should_ignore(obj):
+                obj = self.fixup_obj(obj)
+                if not obj:
                     continue
 
                 deps = [d for d in deps.split(' ') if d != 'FORCE']
@@ -137,7 +142,11 @@ class Kninja(object):
                 obj = var.replace('cmd_', '')
                 if obj in ('files', 'vmlinux'):
                     continue
-                cmdname = self.fixname(var)
+                obj = self.fixup_obj(obj)
+                if not obj:
+                    continue
+
+                cmdname = 'cmd_' + self.fixname(obj)
                 args = shlex.split(val)
                 md = [arg for arg in args if '-MD' in arg]
                 if md:
@@ -146,9 +155,6 @@ class Kninja(object):
                 else:
                     depfile = None
                     deps = None
-
-                if self.should_ignore(obj):
-                    continue
 
                 if cmdname in rulenames:
                     logging.debug('Ignoring duplicate rule %s', var)
@@ -166,7 +172,8 @@ class Kninja(object):
 
             elif var.startswith('deps_'):
                 obj = var.replace('deps_', '')
-                if self.should_ignore(obj):
+                obj = self.fixup_obj(obj)
+                if not obj:
                     continue
 
                 try:
@@ -183,7 +190,8 @@ class Kninja(object):
 
             elif var.startswith('source_'):
                 obj = var.replace('source_', '')
-                if self.should_ignore(obj):
+                obj = self.fixup_obj(obj)
+                if not obj:
                     continue
 
                 name = self.fixname(obj)
