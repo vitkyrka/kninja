@@ -3,12 +3,14 @@
 import argparse
 import logging
 import os
+import re
 import shlex
 import subprocess
 import fnmatch
 
 import ninja_syntax
 
+import ninja_internal
 
 # These objects either get modified in the final link stage (which is opaque to
 # ninja) or generate files that are later used in some rules which are not
@@ -30,6 +32,7 @@ IGNORES = [
 
     'lib/gen_crc32table',
     'scripts/basic/bin2c',
+    'scripts/basic/fixdep',
     'scripts/mod/empty.o',
     'scripts/mod/mk_elfconfig',
     'scripts/pnmtologo',
@@ -74,6 +77,8 @@ class Kninja(object):
         rulenames = []
         builds = []
         rules = []
+        alldeps = []
+        cmds = []
         srctree = ''
         objtree = ''
 
@@ -103,6 +108,8 @@ class Kninja(object):
                 builds.append({'outputs': 'vmlinux',
                                'rule': 'cmd_vmlinux',
                                'inputs': deps})
+
+                cmds.append(('vmlinux', makeall))
                 gotvmlinux = True
                 continue
             elif line.startswith('KBUILD_SRC = '):
@@ -164,6 +171,25 @@ class Kninja(object):
                               'deps': deps,
                               'depfile': depfile})
 
+                cmds.append((obj, val))
+
+            elif var.startswith('deps_'):
+                obj = var.replace('deps_', '')
+                if self.should_ignore(obj):
+                    continue
+
+                try:
+                    mtime = os.stat(obj).st_mtime
+                except OSError:
+                    continue
+
+                val = re.sub(r'\$\(subst[^)]+\)', '', val)
+                val = re.sub(r'\$\(wildcard[^)]+\)', '', val)
+
+                deps = [p for p in val.split(' ')
+                        if p and not p.startswith('include/config/')]
+                alldeps.append((obj, mtime, deps))
+
             elif var.startswith('source_'):
                 obj = var.replace('source_', '')
                 if self.should_ignore(obj):
@@ -174,7 +200,7 @@ class Kninja(object):
                                'rule': 'cmd_' + name,
                                'inputs': val.split(' ')})
 
-        return rules, builds
+        return rules, builds, alldeps, cmds
 
 
 def main():
@@ -201,7 +227,7 @@ def main():
                 makedb = f.readlines()
 
     if not makedb:
-        makeargs = cmd.extend(['-C', args.path]) if args.path else []
+        makeargs = ['-C', args.path] if args.path else []
 
         cmd = ['make', '-j', '%d' % os.cpu_count()] + makeargs
         logging.info('Ensuring full build: %s', ' '.join(cmd))
@@ -219,7 +245,7 @@ def main():
 
     kn = Kninja()
     logging.info('Parsing make database (%d lines)', len(makedb))
-    rules, builds = kn.convert(makedb)
+    rules, builds, alldeps, cmds = kn.convert(makedb)
 
     ninjafile = os.path.join(args.path, 'build.ninja')
     with open(ninjafile, 'w+') as f:
@@ -233,6 +259,19 @@ def main():
 
     logging.info('Wrote build.ninja (%d rules, %d build statements)',
                  len(rules), len(builds))
+
+    depsfile = os.path.join(args.path, '.ninja_deps')
+    with open(depsfile, 'wb') as f:
+        ninja_internal.write_deps(f, alldeps)
+
+    logging.info('Wrote .ninja_deps (%d targets, %d deps)',
+                 len(alldeps), sum([len(d) for _, _, d in alldeps]))
+
+    logfile = os.path.join(args.path, '.ninja_log')
+    with open(logfile, 'w') as f:
+        ninja_internal.write_log(f, cmds)
+
+    logging.info('Wrote .ninja_log (%d commands)', len(cmds))
 
 if __name__ == '__main__':
     main()
