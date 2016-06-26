@@ -19,15 +19,6 @@ import ninja_internal
 # rebuilds.  Use "make V=2" and "ninja -d explain -v" to debug this.
 
 IGNORES = [
-    'arch/arm/boot/compressed/piggy.o',
-
-    'arch/x86/boot/cpu.o',
-    'arch/x86/boot/compressed/misc.o',
-    'arch/x86/boot/compressed/piggy.o',
-    'arch/x86/boot/header.o',
-    'arch/x86/boot/version.o',
-    'arch/x86/realmode/rmpiggy.o',
-
     'init/version.o',
 
     'lib/gen_crc32table',
@@ -44,7 +35,10 @@ IGNORES = [
 WILDCARD_IGNORES = [
     'arch/x86/realmode/rm/*',
     'arch/x86/entry/vdso/*',
+    'arch/arm/boot/*',
     'arch/arm/vdso/*',
+    'arch/x86/boot/*',
+    'arch/x86/realmode/*',
     'arch/x86/tools/*',
 
     'scripts/mod/*',
