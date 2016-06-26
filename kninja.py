@@ -22,11 +22,6 @@ IGNORES = [
     'init/version.o',
 
     'lib/gen_crc32table',
-    'scripts/basic/bin2c',
-    'scripts/basic/fixdep',
-    'scripts/mod/empty.o',
-    'scripts/mod/mk_elfconfig',
-    'scripts/pnmtologo',
     'usr/gen_init_cpio',
 
     'vmlinux.o'
@@ -41,7 +36,7 @@ WILDCARD_IGNORES = [
     'arch/x86/realmode/*',
     'arch/x86/tools/*',
 
-    'scripts/mod/*',
+    'scripts/*',
 ]
 
 
