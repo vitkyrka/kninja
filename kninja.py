@@ -134,7 +134,7 @@ class Kninja(object):
                 continue
 
             try:
-                var, val = line.rstrip().split(' := ')
+                var, val = line.rstrip('\n').split(' := ')
             except ValueError:
                 continue
 
