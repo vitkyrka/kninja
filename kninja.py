@@ -7,6 +7,7 @@ import re
 import shlex
 import subprocess
 import fnmatch
+import sys
 
 import ninja_syntax
 
@@ -272,6 +273,16 @@ def main():
         ninja_internal.write_log(f, cmds)
 
     logging.info('Wrote .ninja_log (%d commands)', len(cmds))
+
+    cmd = ['ninja', '-d', 'explain', '-n']
+    logging.info('Checking ninja status: %s', ' '.join(cmd))
+    out = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8')
+    if 'no work' in out:
+        logging.info('All OK')
+    else:
+        logging.error('%s\n...', '\n'.join(out.splitlines()[:25]))
+        logging.error('ninja should be clean, but has work!')
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
