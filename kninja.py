@@ -192,7 +192,7 @@ def main():
     logging.basicConfig(format='[%(levelname)s] %(message)s', level=level)
 
     makedb = []
-    cachefile = os.path.join(args.path, 'makedb')
+    cachefile = os.path.join(args.path, '.makedb')
 
     if args.cache:
         if os.path.exists(cachefile):
