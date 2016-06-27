@@ -9,19 +9,9 @@ mypath=${0%%/*}
 
 git reset --hard
 make clean
-rm -f .ninja_log .ninja_deps
 
 make defconfig
-make -j8
-
 $mypath/kninja.py
-
-# ninja will rebuild here to get dependency information
-ninja
-
-# This should be equivalent to a null build if we got our ignores right, but
-# let's run it once before the actual benchmarking just in case we didn't.
-make -j8
 
 echo '========== No changes, make'
 time make -j8
