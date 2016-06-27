@@ -20,19 +20,17 @@ import ninja_internal
 
 IGNORES = [
     'init/version.o',
-
     'lib/gen_crc32table',
+    'vmlinux.o',
     'usr/gen_init_cpio',
-
-    'vmlinux.o'
 ]
 
 WILDCARD_IGNORES = [
-    'arch/x86/realmode/rm/*',
-    'arch/x86/entry/vdso/*',
     'arch/arm/boot/*',
     'arch/arm/vdso/*',
+
     'arch/x86/boot/*',
+    'arch/x86/entry/vdso/*',
     'arch/x86/realmode/*',
     'arch/x86/tools/*',
 
