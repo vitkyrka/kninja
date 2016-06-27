@@ -141,7 +141,7 @@ class Kninja(object):
                 continue
 
             if var.startswith('cmd_'):
-                obj = var.replace('cmd_', '')
+                obj = var.replace('cmd_', '', 1)
                 if obj in ('files', 'vmlinux'):
                     continue
                 obj = self.fixup_obj(obj)
@@ -173,7 +173,7 @@ class Kninja(object):
                 cmds.append((obj, cmd))
 
             elif var.startswith('deps_'):
-                obj = var.replace('deps_', '')
+                obj = var.replace('deps_', '', 1)
                 obj = self.fixup_obj(obj)
                 if not obj:
                     continue
@@ -191,7 +191,7 @@ class Kninja(object):
                 alldeps.append((obj, mtime, deps))
 
             elif var.startswith('source_'):
-                obj = var.replace('source_', '')
+                obj = var.replace('source_', '', 1)
                 obj = self.fixup_obj(obj)
                 if not obj:
                     continue
