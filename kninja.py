@@ -34,6 +34,9 @@ WILDCARD_IGNORES = [
     'arch/x86/realmode/*',
     'arch/x86/tools/*',
 
+    # These depend on include/generated/utsrelease.h which make changes
+    '*.mod.o',
+
     'scripts/*',
 ]
 
