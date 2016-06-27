@@ -25,6 +25,10 @@ example of how to use kninja.
 
 ## Usage
 
+Python 3.4+ is required.  Install the required packages with:
+
+    pip3 install -r requirements.txt
+
 Run `kninja.py` to generate Ninja build files.  This must also be run manually
 after any changes to .config or Makefiles.
 
