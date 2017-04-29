@@ -120,7 +120,8 @@ class Kninja(object):
                     and '%' not in line \
                     and '.h' not in line \
                     and '.S' not in line \
-                    and '.c' not in line:
+                    and '.c' not in line \
+                    and 'objcopy.o' not in line: # lkdtm_ro_objcopy.o
                 obj, deps = line.rstrip().split(': ')
 
                 obj = self.fixup_obj(obj)
