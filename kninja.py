@@ -83,7 +83,7 @@ class Kninja(object):
             if not gotvmlinux and line.startswith('vmlinux: '):
                 deps = line.rstrip().replace('vmlinux: ', '').split(' ')
                 deps = [d for d in deps
-                        if d not in ('vmlinux_prereq', 'FORCE')]
+                        if d not in ('autoksyms_recursive', 'vmlinux_prereq', 'FORCE')]
 
                 # This makes make ignore the dependencies for vmlinux, since
                 # those are already taken care of by ninja by the time this
