@@ -28,7 +28,7 @@ IGNORES = [
 
 WILDCARD_IGNORES = [
     'arch/arm/boot/*',
-    'arch/arm/vdso/*',
+    'arch/*/vdso/*',
 
     'arch/x86/boot/*',
     'arch/x86/entry/vdso/*',
