@@ -5,7 +5,7 @@
 # $ ../kninja/benchmark.sh >log.txt 2>&1
 #
 
-mypath=${0%%/*}
+mypath=${0%/*}
 
 git reset --hard
 make clean
