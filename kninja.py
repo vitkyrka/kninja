@@ -130,7 +130,7 @@ class Kninja(object):
                 if not obj:
                     continue
 
-                deps = [d for d in deps.split(' ') if d != 'FORCE']
+                deps = [d for d in deps.split(' ') if d != 'FORCE' and d not in IGNORES]
                 fixed = self.fixname(obj)
 
                 builds.append({'outputs': obj,
