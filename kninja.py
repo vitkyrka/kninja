@@ -240,12 +240,11 @@ def main():
         cmd = ['make', '-p'] + makeargs
         logging.info('Generating make database: %s', ' '.join(cmd))
         out = subprocess.check_output(cmd).decode('utf-8')
+        makedb = [l for l in out.splitlines() if l and l[0] != '#']
 
         logging.info('Caching make database to %s', cachefile)
         with open(cachefile, 'w+') as f:
-            f.write(out)
-
-        makedb = out.split('\n')
+            f.write('\n'.join(makedb))
 
     kn = Kninja()
     logging.info('Parsing make database (%d lines)', len(makedb))
