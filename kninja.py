@@ -106,7 +106,7 @@ class Kninja(object):
                                'rule': 'cmd_vmlinux',
                                'inputs': deps})
 
-                cmds.append(('vmlinux', makeall))
+                cmds.append(('vmlinux', os.stat('vmlinux').st_mtime_ns, makeall))
                 gotvmlinux = True
                 continue
             elif line.startswith('KBUILD_SRC = '):
@@ -173,7 +173,7 @@ class Kninja(object):
                               'deps': deps,
                               'depfile': depfile})
 
-                cmds.append((obj, cmd))
+                cmds.append((obj, os.stat(obj).st_mtime_ns, cmd))
 
             elif var.startswith('deps_'):
                 obj = var.replace('deps_', '', 1)

@@ -39,6 +39,6 @@ def write_log(f, cmds):
     seed = 0xDECAFBADDECAFBAD
 
     f.write('# ninja log v5\n')
-    for obj, cmd in cmds:
+    for obj, mtime, cmd in cmds:
         hsh = mmh2.hash64(cmd.encode('utf-8'), seed)
-        f.write('%d\t%d\t%d\t%s\t%x\n' % (0, 0, 0, obj, hsh))
+        f.write('%d\t%d\t%lu\t%s\t%x\n' % (0, 0, mtime, obj, hsh))
