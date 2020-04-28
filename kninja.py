@@ -8,6 +8,7 @@ import shlex
 import subprocess
 import fnmatch
 import sys
+import re
 
 import ninja_syntax
 
@@ -44,6 +45,15 @@ WILDCARD_IGNORES = [
 ]
 
 
+IGNORE_UNHANDLED = [
+        'System.map',
+        'Module.symvers',
+        'arch/x86/boot/voffset.h',
+        'usr/.initramfs_data.cpio.d',
+        '.version',
+]
+
+
 class Kninja(object):
 
     def __init__(self):
@@ -68,6 +78,37 @@ class Kninja(object):
 
         return obj
 
+    def _parse_tokens(self, line):
+        tokens = []
+        generated = []
+        for token in re.split('\s', line):
+            if not token:
+                continue
+
+            if token.endswith(':') and line.startswith(token) and len(line.split(' ')) > 1:
+                generated.append(token.rstrip(':'))
+                continue
+
+            if not re.match('^[-_./A-Za-z0-9]+$', token):
+                continue
+
+            if token[0] == '/' or \
+                    token[0] == '-' or \
+                    token.endswith('..') or \
+                    token.startswith('CONFIG_') or \
+                    token.startswith('cmd_') or \
+                    token.startswith('deps_') or \
+                    token.endswith('.cmd') or \
+                    token.endswith('modules.order') or \
+                    token.endswith('.conf') or \
+                    any(t for t in IGNORE_UNHANDLED if token.endswith(t)) or \
+                    len(token) < 4:
+                continue
+
+            tokens.append(token)
+
+        return tokens, generated
+
     def convert(self, makedb):
         gotvmlinux = False
 
@@ -78,8 +119,20 @@ class Kninja(object):
         cmds = []
         srctree = ''
         objtree = ''
+        tokens = set()
+        generated = set()
+        handledfiles = set(['vmlinux'])
+
+        rules.append({'name': 'KNINJA',
+                      'command': sys.argv[0],
+                      'generator': 1,
+                      'pool': 'console'})
 
         for line in makedb:
+            newtokens, newgenerated = self._parse_tokens(line)
+            tokens.update(newtokens)
+            generated.update(newgenerated)
+
             if not gotvmlinux and line.startswith('vmlinux: '):
                 deps = line.rstrip().replace('vmlinux: ', '').split(' ')
                 deps = [d for d in deps
@@ -131,6 +184,7 @@ class Kninja(object):
                     continue
 
                 deps = [d for d in deps.split(' ') if d != 'FORCE' and d not in IGNORES]
+                handledfiles.update(deps)
                 fixed = self.fixname(obj)
 
                 builds.append({'outputs': obj,
@@ -173,6 +227,8 @@ class Kninja(object):
                               'deps': deps,
                               'depfile': depfile})
 
+                if deps:
+                    handledfiles.update(deps)
                 cmds.append((obj, os.stat(obj).st_mtime_ns, cmd))
 
             elif var.startswith('deps_'):
@@ -191,6 +247,7 @@ class Kninja(object):
 
                 deps = [p for p in val.split(' ')
                         if p and not p.startswith('include/config/')]
+                handledfiles.update(deps)
                 alldeps.append((obj, mtime, deps))
 
             elif var.startswith('source_'):
@@ -203,6 +260,25 @@ class Kninja(object):
                 builds.append({'outputs': obj,
                                'rule': 'cmd_' + name,
                                'inputs': val.split(' ')})
+                handledfiles.update(val.split(' '))
+
+
+        logging.info('Finding unhandled files (%d tokens)', len(tokens))
+
+        tokens = set([os.path.realpath(t) for t in tokens])
+        tokens.difference_update([os.path.realpath(f) for f in generated])
+        tokens.difference_update([os.path.realpath(f) for f in handledfiles])
+
+        if objtree:
+            # Every make invocation results in a regeneration of the Makefile
+            # in the objdir
+            tokens.remove(os.path.realpath('Makefile'))
+
+        unhandledfiles = sorted([f for f in tokens if os.path.isfile(f)])
+
+        builds.append({'outputs': 'build.ninja',
+                       'rule': 'KNINJA',
+                       'inputs': unhandledfiles})
 
         return rules, builds, alldeps, cmds
 

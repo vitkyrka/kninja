@@ -29,8 +29,8 @@ Python 3.4+ is required.  Install the required packages with:
 
     pip3 install -r requirements.txt
 
-Run `kninja.py` to generate Ninja build files.  This must also be run manually
-after any changes to .config or Makefiles.
+Run `kninja.py` to generate Ninja build files.  This will be automatically
+re-run after any changes to .config or Makefiles.
 
     $ kninja.py
     [INFO] Ensuring full build: make -j 8
