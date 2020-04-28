@@ -6,7 +6,7 @@ import mmh2
 
 def write_deps(f, alldeps):
     signature = '# ninjadeps\n'
-    version = 3
+    version = 4
 
     paths = []
     for out, mtime, deps in alldeps:
@@ -29,9 +29,9 @@ def write_deps(f, alldeps):
         f.write(struct.pack('i', ~_id))
 
     for out, mtime, deps in alldeps:
-        size = len(deps) * 4 + 8
+        size = (1 + 2 + len(deps)) * 4
         f.write(struct.pack('I', size | (1 << 31)))
-        f.write(struct.pack('ii', pathids[out], int(mtime)))
+        f.write(struct.pack('iII', pathids[out], mtime & 0xffffffff, (mtime >> 32) & 0xffffffff))
         f.write(array.array('I', [pathids[d] for d in deps]).tobytes())
 
 

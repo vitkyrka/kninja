@@ -182,7 +182,7 @@ class Kninja(object):
                     continue
 
                 try:
-                    mtime = os.stat(obj).st_mtime
+                    mtime = os.stat(obj).st_mtime_ns
                 except OSError:
                     continue
 
