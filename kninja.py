@@ -124,7 +124,7 @@ class Kninja(object):
         handledfiles = set(['vmlinux'])
 
         rules.append({'name': 'KNINJA',
-                      'command': sys.argv[0],
+                      'command': ' '.join(sys.argv),
                       'generator': 1,
                       'pool': 'console'})
 
@@ -288,6 +288,7 @@ def main():
     parser.add_argument('--cache', action='store_true')
     parser.add_argument('--verbose', '-v', default=0, action='count')
     parser.add_argument('--path', default='')
+    parser.add_argument('makeargs', nargs='*')
     args = parser.parse_args()
 
     if args.verbose >= 1:
@@ -308,6 +309,7 @@ def main():
 
     if not makedb:
         makeargs = ['-C', args.path] if args.path else []
+        makeargs.extend(args.makeargs)
 
         cmd = ['make', '-j', '%d' % os.cpu_count()] + makeargs
         logging.info('Ensuring full build: %s', ' '.join(cmd))
