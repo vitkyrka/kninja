@@ -163,7 +163,7 @@ class Kninja(object):
                 gotvmlinux = True
                 continue
             elif line.startswith('KBUILD_SRC = '):
-                srctree = line.rstrip().replace('KBUILD_SRC = ', '')
+                srctree = line.rstrip().replace('KBUILD_SRC =', '').rstrip()
                 continue
             elif line.startswith('O = '):
                 objtree = line.rstrip().replace('O = ', '')
